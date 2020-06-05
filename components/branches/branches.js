@@ -27,6 +27,7 @@ class BranchesViewModel {
       this.updateRefs();
       return value;
     };
+    this.shouldAutoFetch = ungit.config.autoFetch;
     this.isShowRemote.subscribe(setLocalStorageAndUpdate.bind(null, showRemote));
     this.isShowBranch.subscribe(setLocalStorageAndUpdate.bind(null, showBranch));
     this.isShowTag.subscribe(setLocalStorageAndUpdate.bind(null, showTag));
@@ -53,7 +54,11 @@ class BranchesViewModel {
       event.event === 'branch-updated' ||
       event.event === 'git-directory-changed'
     ) {
-      this.updateRefsDebounced();
+      if (
+        (event.event != 'working-tree-changed' && event.event != 'git-directory-changed') ||
+        this.shouldAutoFetch
+      )
+        this.updateRefsDebounced();
     }
   }
   updateRefs() {
