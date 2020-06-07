@@ -35,7 +35,7 @@ class BranchesViewModel {
     this.listRefsEnabled = ko.computed(() => this.branchesAndLocalTags().length > 0);
     this.branchIcon = octicons['git-branch'].toSVG({ height: 18 });
     this.closeIcon = octicons.x.toSVG({ height: 18 });
-    this.updateRefsDebounced = _.debounce(() => this.updateRefs(this.shouldAutoFetch), 500);
+    this.updateRefsDebounced = _.debounce(this.updateRefs, 500);
   }
 
   checkoutBranch(branch) {
@@ -57,10 +57,9 @@ class BranchesViewModel {
       this.updateRefsDebounced();
     }
   }
-  updateRefs(remoteFetch) {
-    if (!remoteFetch) {
-      remoteFetch = '';
-    }
+  updateRefs(forceRemoteFetch) {
+    forceRemoteFetch = forceRemoteFetch || this.shouldAutoFetch || '';
+
     const currentBranchProm = this.server
       .getPromise('/branches', { path: this.repoPath() })
       .then((branches) =>
@@ -76,7 +75,7 @@ class BranchesViewModel {
 
     // refreshes tags branches and remote branches
     const refsProm = this.server
-      .getPromise('/refs', { path: this.repoPath(), remoteFetch: remoteFetch })
+      .getPromise('/refs', { path: this.repoPath(), remoteFetch: forceRemoteFetch })
       .then((refs) => {
         const version = Date.now();
         const sorted = refs

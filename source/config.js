@@ -234,7 +234,10 @@ const argv = yargs
   )
   .describe('noFFMerge', "Don't fast forward git mergers. See git merge --no-ff documentation")
   .boolean('noFFMerge')
-  .describe('autoFetch', 'Automatically fetch from remote when entering a repository using ungit')
+  .describe(
+    'autoFetch',
+    'Automatically fetch from remote when entering a repository using ungit, periodically on activity detection, or on directory change'
+  )
   .boolean('autoFetch')
   .describe('dev', 'Used for development purposes')
   .boolean('dev')
