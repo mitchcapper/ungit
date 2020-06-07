@@ -24,7 +24,7 @@ class BranchesViewModel {
     this.graph = graph;
     const setLocalStorageAndUpdate = (localStorageKey, value) => {
       storage.setItem(localStorageKey, value);
-      this.updateRefs();
+      this.updateRefs(this.shouldAutoFetch);
       return value;
     };
     this.shouldAutoFetch = ungit.config.autoFetch;
@@ -35,7 +35,7 @@ class BranchesViewModel {
     this.listRefsEnabled = ko.computed(() => this.branchesAndLocalTags().length > 0);
     this.branchIcon = octicons['git-branch'].toSVG({ height: 18 });
     this.closeIcon = octicons.x.toSVG({ height: 18 });
-    this.updateRefsDebounced = _.debounce(this.updateRefs, 500);
+    this.updateRefsDebounced = _.debounce(() => this.updateRefs(this.shouldAutoFetch), 500);
   }
 
   checkoutBranch(branch) {
@@ -45,7 +45,7 @@ class BranchesViewModel {
     ko.renderTemplate('branches', this, {}, parentElement);
   }
   clickFetch() {
-    this.updateRefs();
+    this.updateRefs(true);
   }
   onProgramEvent(event) {
     if (
@@ -54,14 +54,13 @@ class BranchesViewModel {
       event.event === 'branch-updated' ||
       event.event === 'git-directory-changed'
     ) {
-      if (
-        (event.event != 'working-tree-changed' && event.event != 'git-directory-changed') ||
-        this.shouldAutoFetch
-      )
-        this.updateRefsDebounced();
+      this.updateRefsDebounced();
     }
   }
-  updateRefs() {
+  updateRefs(remoteFetch) {
+    if (!remoteFetch) {
+      remoteFetch = '';
+    }
     const currentBranchProm = this.server
       .getPromise('/branches', { path: this.repoPath() })
       .then((branches) =>
@@ -77,7 +76,7 @@ class BranchesViewModel {
 
     // refreshes tags branches and remote branches
     const refsProm = this.server
-      .getPromise('/refs', { path: this.repoPath() })
+      .getPromise('/refs', { path: this.repoPath(), remoteFetch: remoteFetch })
       .then((refs) => {
         const version = Date.now();
         const sorted = refs

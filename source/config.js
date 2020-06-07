@@ -58,7 +58,7 @@ const defaultConfig = {
   // Don't fast forward git mergers. See git merge --no-ff documentation
   noFFMerge: true,
 
-  // Automatically fetch from remote when entering a repository using ungit
+  // Automatically fetch from remote when entering a repository using ungit, periodically on activity detection, or on directory change
   autoFetch: true,
 
   // Used for development purposes.

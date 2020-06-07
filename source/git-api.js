@@ -440,8 +440,9 @@ exports.registerApi = (env) => {
   app.get(`${exports.pathPrefix}/refs`, ensureAuthenticated, ensurePathExists, (req, res) => {
     if (res.setTimeout) res.setTimeout(tenMinTimeoutMs);
 
-    const task = gitPromise(['remote'], req.query.path)
-      .then((remoteText) => {
+    let task = gitPromise(['remote'], req.query.path);
+    if (req.query.remoteFetch) {
+      task = task.then((remoteText) => {
         const remotes = remoteText.trim().split('\n');
 
         // making calls serially as credential helpers may get confused to which cred to get.
@@ -455,7 +456,9 @@ exports.registerApi = (env) => {
             }).catch((e) => winston.warn('err during remote fetch for /refs', e)); // ignore fetch err as it is most likely credential
           });
         }, Promise.resolve());
-      })
+      });
+    }
+    task = task
       .then(() => gitPromise(['show-ref', '-d'], req.query.path))
       // On new fresh repos, empty string is returned but has status code of error, simply ignoring them
       .catch((e) => {
