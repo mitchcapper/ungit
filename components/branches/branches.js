@@ -24,7 +24,7 @@ class BranchesViewModel {
     this.graph = graph;
     const setLocalStorageAndUpdate = (localStorageKey, value) => {
       storage.setItem(localStorageKey, value);
-      this.updateRefs(this.shouldAutoFetch);
+      this.updateRefs();
       return value;
     };
     this.shouldAutoFetch = ungit.config.autoFetch;
